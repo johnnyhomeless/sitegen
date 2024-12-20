@@ -1,5 +1,5 @@
 import unittest
-from text_splitter import split_nodes_delimiter
+from text_splitter import split_nodes_delimiter, split_nodes_image
 from textnode import TextNode, TextType
 
 class TestTextSplitter(unittest.TestCase):
@@ -69,6 +69,73 @@ class TestTextSplitter(unittest.TestCase):
         with self.assertRaises(ValueError):
             split_nodes_delimiter([node], None, TextType.BOLD)
 
+    def test_basic_image(self):
+        node = [TextNode("![doggo](http://dog.go/woof.jpg)", TextType.TEXT)]
+        new_nodes = split_nodes_image(node)
+        self.assertEqual(new_nodes, [TextNode("doggo", TextType.IMAGES, "http://dog.go/woof.jpg")])
+    
+    def test_just_txt(self):
+        node = [TextNode("boing", TextType.TEXT)]
+        new_nodes = split_nodes_image(node)
+        self.assertEqual(new_nodes, [TextNode("boing", TextType.TEXT)])
+    
+    def test_none_nodes(self):
+        node = [TextNode(None, TextType.TEXT)]
+        with self.assertRaises(Exception):
+            split_nodes_image(node)
+
+    def test_empty_url(self):
+        node = [TextNode("![doggo]()", TextType.TEXT)]
+        with self.assertRaises(Exception):
+            split_nodes_image(node)
+    
+    def test_multiple_images(self):
+        node = [TextNode("![doggo](http://dog.go/woof.jpg)![doggo2](http://dog.go/woof2.jpg)", TextType.TEXT)]
+        new_nodes = split_nodes_image(node)
+        self.assertEqual(len(new_nodes), 2)
+        self.assertEqual(new_nodes, [
+            TextNode("doggo", TextType.IMAGES, "http://dog.go/woof.jpg"),
+            TextNode("doggo2", TextType.IMAGES, "http://dog.go/woof2.jpg")
+        ])        
+
+    def test_text_between_images(self):
+        node = [TextNode("![doggo](http://dog.go/woof.jpg) boing boing ![doggo2](http://dog.go/woof2.jpg)", TextType.TEXT)]
+        new_nodes = split_nodes_image(node)
+        self.assertEqual(len(new_nodes), 3)
+        self.assertEqual(new_nodes, [
+            TextNode("doggo", TextType.IMAGES, "http://dog.go/woof.jpg"),
+            TextNode(" boing boing ", TextType.TEXT),
+            TextNode("doggo2", TextType.IMAGES, "http://dog.go/woof2.jpg")
+        ])
+    
+    def test_invalid_image_syntax(self):
+        node = [TextNode("![doggo](9ub)", TextType.TEXT)]
+        with self.assertRaises(Exception):
+            split_nodes_image(node)
+
+    def test_empty_alt_text(self):
+        node = [TextNode("![](http://dog.go/woof.jpg)", TextType.TEXT)]
+        new_nodes = split_nodes_image(node)
+        self.assertEqual(new_nodes, [TextNode("", TextType.IMAGES, "http://dog.go/woof.jpg")])
+
+    def test_non_text_node(self):
+        node = [TextNode("![doggo](http://dog.go/woof.jpg)", TextType.BOLD)]
+        new_nodes = split_nodes_image(node)
+        self.assertEqual(new_nodes, node)
+
+    def test_empty_list(self):
+        node = []
+        with self.assertRaises(Exception):
+            split_nodes_image(node)
+        
+    def test_empty_node(self):
+        with self.assertRaises(Exception):
+            split_nodes_image()
+    
+    def test_non_textnode(self):
+        node = "hawktuah"
+        with self.assertRaises(Exception):
+            split_nodes_image(node)
 
 if __name__ == "__main__":
     unittest.main()
