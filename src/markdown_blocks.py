@@ -20,22 +20,22 @@ def markdown_to_blocks(markdown):
    return [block.strip() for block in blocks if block.strip()]
 
 def block_to_block_type(block):
-    _error_handling(block)
-
+    block = block.strip()
+    lines = block.split('\n')
+    
     if block.startswith("```") and block.endswith("```"):
         return "code"
     
     if block.startswith("#") and " " in block[1:7]:
         return "heading"
     
-    lines = block.split('\n')
-    if all(line.startswith('>') for line in lines):
+    if all(line.strip().startswith('>') for line in lines):
         return "quote"
     
-    if all((line.startswith('* ') or line.startswith('- ')) for line in lines):
+    if all(line.strip().startswith(('* ', '- ')) for line in lines):
         return "unordered_list"
     
-    if is_ordered_list(lines):
+    if all(line.strip().startswith(f"{i+1}. ") for i, line in enumerate(lines)):
         return "ordered_list"
     
     return "paragraph"

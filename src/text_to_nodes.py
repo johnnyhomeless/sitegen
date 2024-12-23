@@ -3,11 +3,11 @@ from text_splitter import split_nodes_delimiter, split_nodes_image, split_nodes_
 
 def _error_handling(text):
     if text is None:
-        raise ValueError("text cannot be None")
+        raise ValueError(f"{text} cannot be None")
     if not isinstance(text, str):
-        raise ValueError("text must be a string")
+        raise ValueError(f"{text} must be a string")
     if text.strip() == "":
-        raise ValueError("text cannot be empty")
+        raise ValueError(f"{text} cannot be empty")
 
 def text_to_textnodes(text):
     _error_handling(text)
