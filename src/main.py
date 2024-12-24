@@ -1,17 +1,14 @@
 from textnode import TextType, TextNode
-import os, shutil
-from markdown_to_html import generate_page
+import os, shutil, pathlib
+from markdown_to_html import generate_page, markdown_to_html_node
 
 base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 public = os.path.join(base, "public/") 
 static = os.path.join(base, "static/")
-content_dir = "content/index.md"
 template_file = "template.html"
-public_dir = "public/index.html"
+content_dir = "content"
+public_dir = "public"
 
-def main():
-    test_print = TextNode("This is a text node", TextType.BOLD, "https://www.boot.dev")
-    print(test_print)
 
 def folder_deleter():
     if os.path.exists(public):
@@ -19,11 +16,42 @@ def folder_deleter():
     os.makedirs(public)
     shutil.copytree(static, public, dirs_exist_ok=True)
 
-if __name__=="__main__":
-    main()
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+   content_path = pathlib.Path(dir_path_content)
+   markdown_files = content_path.rglob("*.md")
+
+   for file_path in markdown_files:
+       relative_path = file_path.relative_to(content_path)
+       output_path = pathlib.Path(dest_dir_path) / relative_path
+       output_path = output_path.with_suffix('.html')
+       output_path.parent.mkdir(parents=True, exist_ok=True)
+
+       with open(file_path, 'r') as f:
+           markdown_content = f.read()
+       
+       with open(template_path, 'r') as f:
+           template = f.read()
+
+       html_node = markdown_to_html_node(markdown_content)
+       html_content = html_node.to_html()
+       
+       dirname = os.path.dirname(file_path)
+       title = os.path.basename(dirname)
+       final_html = template.replace("{{ Content }}", html_content).replace("{{ Title }}", title)
+
+       with open(output_path, 'w') as f:
+           f.write(final_html)
+
+def main():
     folder_deleter()
-    generate_page(
+    generate_pages_recursive(
         os.path.join(base, content_dir),
         os.path.join(base, template_file), 
         os.path.join(base, public_dir)
     )
+    print(os.path.join(base, content_dir))
+    print(os.path.join(base, template_file))
+    print(os.path.join(base, public_dir))
+
+if __name__=="__main__":
+    main()
