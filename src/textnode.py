@@ -27,6 +27,8 @@ class TextNode:
         return f'TextNode("{self.text}", {self.text_type.value}, "{self.url}")'
 
 def is_valid_url(url):
+    if url.startswith('/'):  # Allow relative URLs
+        return True
     try:
         result = urlparse(url)
         return all([result.scheme, result.netloc])

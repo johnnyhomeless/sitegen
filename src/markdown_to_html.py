@@ -2,6 +2,7 @@ from htmlnode import ParentNode, LeafNode
 from text_to_nodes import text_to_textnodes, _error_handling
 from markdown_blocks import markdown_to_blocks, block_to_block_type
 from textnode import text_node_to_html_node
+import os
 
 def markdown_to_html_node(markdown):
    _error_handling(markdown)
@@ -100,3 +101,34 @@ def extract_code_content(block):
 
 def extract_paragraph_content(block):
    return block.strip()
+
+def extract_title(markdown):
+    if markdown is None or not isinstance(markdown, str):
+        raise ValueError("Markdown must be a valid string")
+        
+    lines = markdown.split('\n')
+    for line in lines:
+        if line.startswith('# '):
+            return line[2:].strip()
+            
+    raise ValueError("No h1 header (# ) found in markdown")
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+   
+    with open(from_path, 'r') as data:
+        contents_md = data.read()
+
+    with open(template_path, 'r') as data:
+        contents_html = data.read()
+    
+    html_node = markdown_to_html_node(contents_md)
+    html_content = html_node.to_html()
+    title = extract_title(contents_md)
+    final_html = contents_html.replace("{{ Title }}", title)
+    final_html = final_html.replace("{{ Content }}", html_content)
+
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
+    with open(dest_path, 'w') as f:
+       f.write(final_html)

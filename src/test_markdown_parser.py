@@ -1,5 +1,5 @@
 import unittest
-from markdown_parser import extract_markdown_images, extract_markdown_links
+from markdown_parser import extract_markdown_images, extract_markdown_links, extract_title
 
 class TestMarkdownParser(unittest.TestCase):
     def test_basic_image(self):
@@ -40,6 +40,23 @@ class TestMarkdownParser(unittest.TestCase):
         link_matches = extract_markdown_links(text)
         self.assertEqual(len(image_matches), 1)
         self.assertEqual(len(link_matches), 1)
+
+    def test_extract_title_basic(self):
+        text = "# My Title\nContent here"
+        self.assertEqual(extract_title(text), "My Title")
+
+    def test_extract_title_no_title(self):
+        text = "Content without title"
+        with self.assertRaises(ValueError):
+            extract_title(text)
+
+    def test_extract_title_empty(self):
+        with self.assertRaises(ValueError):
+            extract_title("")
+
+    def test_extract_title_multiple_headers(self):
+        text = "# First Title\n## Second Title"
+        self.assertEqual(extract_title(text), "First Title")
 
 if __name__ == "__main__":
     unittest.main()

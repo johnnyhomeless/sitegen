@@ -1,5 +1,5 @@
-import unittest
-from markdown_to_html import markdown_to_html_node
+import unittest, os
+from markdown_to_html import markdown_to_html_node, extract_title, generate_page
 
 class TestMarkDown_To_Html(unittest.TestCase):
     def test_paragraph_basic(self):
@@ -97,6 +97,45 @@ class TestMarkDown_To_Html(unittest.TestCase):
 
         node = markdown_to_html_node(markdown)
         self.assertEqual(node.to_html(), expected)
+
+    def test_basic_title(self):
+        text = "# Hello"
+        self.assertEqual(extract_title(text), "Hello")
+
+    def test_title_with_content(self):
+        text = "# Hello\nThis is content"
+        self.assertEqual(extract_title(text), "Hello")
+
+    def test_missing_title(self):
+        text = "Hello\nNo title here"
+        with self.assertRaises(ValueError):
+            extract_title(text)
+
+    def test_none_input(self):
+        with self.assertRaises(ValueError):
+            extract_title(None)
+
+
+    def test_generate_page_basic(self):
+        # Create test directory
+        os.makedirs("test_dir", exist_ok=True)
+        
+        # Update paths to use test directory
+        with open("test_dir/test_content.md", "w") as f:
+            f.write("# Test Title\nTest content")
+        with open("test_dir/test_template.html", "w") as f:
+            f.write("<title>{{ Title }}</title>{{ Content }}")
+        
+        generate_page("test_dir/test_content.md", "test_dir/test_template.html", "test_dir/test_output.html")
+        
+        with open("test_dir/test_output.html", "r") as f:
+            content = f.read()
+        self.assertIn("<title>Test Title</title>", content)
+        self.assertIn("Test content", content)
+
+        # Cleanup
+        import shutil
+        shutil.rmtree("test_dir")
 
 if __name__ == "__main__":
     unittest.main()
