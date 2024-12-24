@@ -74,24 +74,24 @@ class TestMarkDown_To_Html(unittest.TestCase):
     def test_comprehensive_markdown(self):
         markdown = """# Top Level Heading
 
-This is a **bold** paragraph with *italic* text and `inline code`. Here's a [link](https://example.com).
+        This is a **bold** paragraph with *italic* text and `inline code`. Here's a [link](https://example.com).
 
-## Second Level Heading
+        ## Second Level Heading
 
-> A blockquote with **bold** and *italic* text
-> And another line
+        > A blockquote with **bold** and *italic* text
+        > And another line
 
-1. First list item with **bold**
-2. Second item with *italic*
-3. Third item with `code`
+        1. First list item with **bold**
+        2. Second item with *italic*
+        3. Third item with `code`
 
-* Bullet with [link](https://test.com)
-* Another bullet
+        * Bullet with [link](https://test.com)
+        * Another bullet
 
-```
-Code block with multiple
-lines of code
-```"""
+        ```
+        Code block with multiple
+        lines of code
+        ```"""
         
         expected = '<div><h1>Top Level Heading</h1><p>This is a <b>bold</b> paragraph with <i>italic</i> text and <code>inline code</code>. Here\'s a <a href="https://example.com">link</a>.</p><h2>Second Level Heading</h2><blockquote>A blockquote with <b>bold</b> and <i>italic</i> text\nAnd another line</blockquote><ol><li>First list item with <b>bold</b></li><li>Second item with <i>italic</i></li><li>Third item with <code>code</code></li></ol><ul><li>Bullet with <a href="https://test.com">link</a></li><li>Another bullet</li></ul><pre><code>Code block with multiple\nlines of code</code></pre></div>'
 
